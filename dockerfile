@@ -1,25 +1,13 @@
-# Step 1: Build stage (Node.js for React/Vite)
-FROM node:18 AS build-stage
+# Stage 1: Build the React frontend
+FROM node:18-alpine AS build
 WORKDIR /app
-
-# Copy dependency files first
 COPY package*.json ./
-
 RUN npm install
-
-# Copy rest of project
 COPY . .
-
-# Build production-ready frontend
 RUN npm run build
 
-# Step 2: Runtime stage (Nginx to serve static files)
-FROM nginx:alpine
-
-RUN rm -rf /usr/share/nginx/html/*
-
-COPY --from=build-stage /app/dist /usr/share/nginx/html
-
-EXPOSE 80
-
+# Stage 2: Serve with Nginx
+FROM nginx:1.25-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 3000
 CMD ["nginx", "-g", "daemon off;"]
