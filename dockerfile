@@ -1,26 +1,22 @@
-# Stage 1: Build React/Node app
+# Stage 1: Build the frontend
 FROM node:20-alpine AS build
-
 WORKDIR /app
 
-# Install dependencies
+# Copy dependencies first (better caching)
 COPY package*.json ./
-RUN npm install --legacy-peer-deps
-
-# Copy source code
+COPY vite.config.* ./
 COPY . .
 
-# Build the app for production
+# Install and build
+RUN npm install
 RUN npm run build
 
 # Stage 2: Serve with Nginx
-FROM nginx:alpine
+FROM nginx:1.27-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
 
-# Copy built app to Nginx html folder
-COPY --from=build /app/build /usr/share/nginx/html
+# Optional: overwrite default nginx config for SPA routing
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port
-EXPOSE 3000
-
-# Start Nginx
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
