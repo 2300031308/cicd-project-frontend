@@ -1,6 +1,6 @@
 const config = 
 {
-    "url": "http://localhost:8081"
+    "url": "http://backend:8081"
     // "https://sdpbackend-famf.onrender.com"
 }
 
